@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AEMS | Algorithmic Exception Management</title>
+    <style>
+        /* GLOBAL VARIABLES */
+        :root {
+            --primary-dark: #2B343B; 
+            --primary-light: #7C878E;
+            --accent-red: #C8102E;
+            --bg-light: #F9FAFB;
+            --text-dark: #1F2937;
+            --success: #2e7d32;
+            --warning: #e5a910;
+        }
+
+        body, html { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text-dark); background-color: var(--bg-light); line-height: 1.6; -webkit-font-smoothing: antialiased; }
+
+        /* LANDING PAGE STYLES */
+        #landing-view { display: block; }
+        nav { background-color: white; padding: 24px 50px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #E5E7EB; position: sticky; top: 0; z-index: 1000; }
+        .logo { font-size: 22px; font-weight: 800; color: var(--primary-dark); letter-spacing: 0.5px; }
+        .logo span { color: var(--accent-red); }
+        .hero { background-color: var(--primary-dark); color: white; padding: 120px 20px; text-align: center; }
+        .hero h1 { font-size: 3.5rem; font-weight: 700; margin-bottom: 24px; max-width: 800px; margin-left: auto; margin-right: auto; line-height: 1.15; letter-spacing: -1px; }
+        .hero p { font-size: 1.25rem; color: #9CA3AF; max-width: 600px; margin: 0 auto 40px auto; font-weight: 400; }
+        .btn-large { display: inline-block; background-color: var(--accent-red); color: white; font-size: 1rem; font-weight: 600; padding: 16px 32px; border-radius: 4px; text-decoration: none; border: none; cursor: pointer; transition: background-color 0.2s ease; }
+        .btn-large:hover { background-color: #a00d25; }
+        .nav-btn { padding: 10px 24px; font-size: 0.9rem; }
+        .split-section { display: flex; flex-wrap: wrap; max-width: 1100px; margin: 80px auto; gap: 40px; padding: 0 20px; }
+        .split-box { flex: 1; min-width: 300px; background: white; padding: 48px; border-radius: 8px; border: 1px solid #E5E7EB; }
+        .split-box h3 { font-size: 1.25rem; margin-top: 0; font-weight: 600; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px;}
+        .split-box p { color: #4B5563; font-size: 1.05rem; }
+        .features { background-color: white; padding: 100px 20px; text-align: center; border-top: 1px solid #E5E7EB; }
+        .features h2 { font-size: 2rem; margin-bottom: 60px; color: var(--primary-dark); font-weight: 700; letter-spacing: -0.5px;}
+        .feature-grid { display: flex; flex-wrap: wrap; justify-content: center; gap: 40px; max-width: 1100px; margin: 0 auto; }
+        .feature-card { flex: 1; min-width: 250px; max-width: 330px; text-align: left; padding: 0; }
+        .feature-card h4 { font-size: 1.1rem; margin: 0 0 12px 0; color: var(--primary-dark); font-weight: 600; border-bottom: 2px solid var(--accent-red); padding-bottom: 12px; display: inline-block; }
+        .feature-card p { color: #4B5563; font-size: 1rem; line-height: 1.6; }
+        footer { background-color: var(--primary-dark); color: #9CA3AF; text-align: center; padding: 40px 20px; font-size: 0.85rem; border-top: 1px solid #374151;}
+        @media (max-width: 768px) { .hero h1 { font-size: 2.5rem; } nav { padding: 20px; } .split-box { padding: 30px; } }
+
+        /* APP PROTOTYPE STYLES */
+        #app-view { display: none; justify-content: center; align-items: center; min-height: 100vh; background-color: #E5E7EB; padding: 20px; box-sizing: border-box; }
+        .app-container { width: 100%; max-width: 414px; height: 850px; max-height: 90vh; background-color: white; box-shadow: 0 20px 40px rgba(0,0,0,0.1); overflow: hidden; display: flex; flex-direction: column; position: relative; border-radius: 16px; border: 1px solid #D1D5DB; }
+        .app-header { background-color: var(--primary-dark); color: white; padding: 12px 16px; text-align: center; font-weight: 600; font-size: 16px; line-height: 1.2; }
+        .app-header small { display: block; font-size: 11px; font-weight: 400; color: #9CA3AF; margin-top: 2px; }
+        .screen { display: none; flex: 1; padding: 20px; flex-direction: column; overflow-y: auto; }
+        .active-screen { display: flex; }
+        .card { background: white; border: 1px solid #E5E7EB; border-radius: 8px; padding: 20px; margin-bottom: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);}
+        .app-container h2 { color: var(--primary-dark); font-size: 18px; margin-top: 0; margin-bottom: 15px; font-weight: 600;}
+        .category-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 8px; margin-top: 15px; }
+        .app-container label { font-weight: 600; color: var(--primary-dark); font-size: 13px; text-transform: uppercase; letter-spacing: 0.5px;}
+        .app-container select, .app-container input { width: 100%; padding: 12px; margin: 0 0 15px 0; border: 1px solid #D1D5DB; border-radius: 6px; font-size: 14px; box-sizing: border-box; background-color: #F9FAFB; }
+        .app-container select:focus, .app-container input:focus { outline: none; border-color: var(--primary-dark); }
+        .btn { background-color: var(--primary-dark); color: white; border: none; padding: 16px; width: 100%; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; margin-bottom: 10px; transition: background 0.2s; }
+        .btn:hover { background-color: #1F2937; }
+        .btn-red { background-color: var(--accent-red); }
+        .btn-red:hover { background-color: #a00d25; }
+        .btn-outline { background-color: transparent; color: var(--primary-dark); border: 1px solid var(--primary-dark); }
+        .btn-outline-red { background-color: transparent; color: var(--accent-red); border: 1px solid var(--accent-red); }
+        .btn-outline-red:hover { background-color: #FEF2F2; }
+        .btn-sm { background-color: var(--primary-light); color: white; border: none; padding: 6px 12px; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; }
+        .btn-sm:hover { background-color: var(--primary-dark); }
+        
+        /* Bubble Selector Styles */
+        .location-toggle { display: flex; gap: 10px; margin-bottom: 24px; margin-top: 8px; }
+        .toggle-btn { flex: 1; padding: 12px; border: 1px solid #D1D5DB; border-radius: 6px; background: #F9FAFB; color: var(--primary-dark); font-weight: 600; font-size: 13px; cursor: pointer; transition: all 0.2s; text-align: center; }
+        .toggle-btn.selected { background: var(--primary-dark); color: white; border-color: var(--primary-dark); }
+
+        .alert-box { border-left: 4px solid var(--accent-red); background-color: #FEF2F2; padding: 16px; border-radius: 0 6px 6px 0; margin-bottom: 20px; }
+        .alert-title { color: var(--accent-red); font-weight: 700; font-size: 14px; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.5px;}
+        .data-row { display: flex; justify-content: space-between; margin: 12px 0; font-size: 14px; border-bottom: 1px solid #E5E7EB; padding-bottom: 8px;}
+        .directive { font-weight: 700; color: var(--primary-dark); margin-top: 15px; font-size: 15px;}
+        .velocity-section { border-top: 1px solid #E5E7EB; padding-top: 20px; margin-top: auto; margin-bottom: 15px; }
+        .vel-title { font-size: 13px; font-weight: 600; color: var(--primary-dark); margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px;}
+        .vel-grid { display: flex; gap: 6px; margin-bottom: 15px; }
+        .vel-box { flex: 1; background-color: #F3F4F6; border-radius: 4px; text-align: center; padding: 8px 2px; }
+        .vel-box small { display: block; font-size: 10px; color: #6B7280; font-weight: 600;}
+        .vel-box span { display: block; font-size: 14px; font-weight: 700; color: var(--primary-dark); margin-top: 2px;}
+        .barcode-area { border: 2px dashed #D1D5DB; height: 160px; display: flex; align-items: center; justify-content: center; border-radius: 8px; margin-bottom: 24px; color: #9CA3AF; font-weight: 400; font-size: 24px; letter-spacing: 4px; background: #F9FAFB; }
+        .success-box { border-left: 4px solid var(--success); background-color: #F0FDF4; padding: 20px; border-radius: 0 6px 6px 0; text-align: center; }
+        .success-box h1 { color: var(--success); margin: 0 0 10px 0; font-size: 22px; font-weight: 700;}
+        .warning-box { border-left: 4px solid var(--warning); background-color: #FEFCE8; padding: 16px; border-radius: 0 6px 6px 0; margin-bottom: 20px; display: none; text-align: left; font-size: 14px;}
+        .warning-box strong { color: #854D0E; }
+        #error-msg { color: var(--accent-red); font-weight: 600; text-align: center; margin-bottom: 15px; display: none; font-size: 14px;}
+        .print-item { margin-bottom: 15px; border-bottom: 1px solid #E5E7EB; padding-bottom: 12px; font-size: 13px; }
+        .print-item strong { display: block; font-size: 15px; margin-bottom: 4px; color: var(--primary-dark); font-weight: 600;}
+        .print-item .meta { color: #6B7280; }
+        .exit-app { position: absolute; top: 16px; left: 16px; color: rgba(255,255,255,0.8); cursor: pointer; font-size: 14px; font-weight: 500; }
+        .exit-app:hover { color: white; }
+    </style>
+</head>
+<body>
+
+    <!-- MARKETING LANDING PAGE -->
+    <div id="landing-view">
+        <nav>
+            <div class="logo">AEMS<span>.</span></div>
+            <div class="nav-links">
+                <button onclick="launchPrototype()" class="btn-large nav-btn">Access Prototype</button>
+            </div>
+        </nav>
+
+        <section class="hero">
+            <h1>End Ghost Inventory. <br>Reclaim Your Retail Labor.</h1>
+            <p>AEMS is the intelligent middleware that cross-references POS velocity with Automated Replenishment data to locate hidden inventory before you lose the sale.</p>
+            <button onclick="launchPrototype()" class="btn-large">Launch Interactive Demo</button>
+        </section>
+
+        <section class="split-section">
+            <div class="split-box bad">
+                <h3 style="color: var(--primary-light);">The 20th Century Method</h3>
+                <p><strong>Blind visual walks:</strong> Store associates waste upwards of 3 hours per day visually inspecting thousands of items, trying to guess what is missing from the shelf.</p>
+                <p><strong>The Data Gap:</strong> Even when items are restocked, the central AR system never receives updated, separated counts. Corporate continues to blindly order freight you don't need.</p>
+            </div>
+            
+            <div class="split-box good">
+                <h3 style="color: var(--accent-red);">The AEMS Solution</h3>
+                <p><strong>Algorithmic precision:</strong> AEMS constantly compares real-time register sales (POS) against backroom inventory to mathematically identify "Lies" in your data.</p>
+                <p><strong>The Closed Loop:</strong> We push a targeted 45-minute picklist to existing associate handhelds. Upon scanning, our "Two-Bin" workflow permanently calibrates your corporate ordering algorithms.</p>
+            </div>
+        </section>
+
+        <section class="features">
+            <h2>Enterprise ROI, Achieved Instantly.</h2>
+            <div class="feature-grid">
+                <div class="feature-card">
+                    <h4>Zero CapEx Hardware</h4>
+                    <p>AEMS is lightweight middleware. It integrates directly with your existing POS streams and operates beautifully on the Zebra handhelds your team already owns.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>3 Hours Saved Daily</h4>
+                    <p>By eliminating blind store walks and providing a prioritized, high-value picklist, management labor is instantly recovered for customer-facing activities.</p>
+                </div>
+                <div class="feature-card">
+                    <h4>Data Integrity Engine</h4>
+                    <p>Built-in UI safeguards prevent fat-finger entry errors. Hard-stops prevent overstocking beyond physical shelf capacity, protecting your backroom from freight overload.</p>
+                </div>
+            </div>
+        </section>
+
+        <footer>
+            <p><strong>AEMS: Algorithmic Exception Management System</strong></p>
+            <p>Developed for Business and Professional Comm 501 Presentation by Slater Looper</p>
+            <p>&copy; 2026. All rights reserved.</p>
+        </footer>
+    </div>
+
+    <!-- MOBILE APP PROTOTYPE -->
+    <div id="app-view">
+        <div class="app-container">
+            <div class="app-header" id="appHeader">
+                <span class="exit-app" onclick="exitPrototype()">&#8592; Exit</span>
+                AEMS
+                <small>Associate ID: SL-4892</small>
+            </div>
+
+            <!-- SCREEN 1: SETUP -->
+            <div id="screen-setup" class="screen active-screen">
+                <div class="card" style="border: none; padding: 0;">
+                    <h2>AEMS Control Panel</h2>
+                    <p style="font-size: 13px; color: #6B7280; margin-bottom: 24px; margin-top:-10px; line-height: 1.5;">Select a system exception category below to generate a picklist, or run the execution workflow.</p>
+                    
+                    <div class="category-header"><label>NONES</label><button class="btn-sm" onclick="printFromDropdown('select-nones')">Print Picklist</button></div>
+                    <select id="select-nones" onchange="clearOthers('select-nones')">
+                        <option value="">--- Select Exception ---</option>
+                        <option value="ALL">Select All Items in Category</option>
+                        <option value="n1">Market District Pike Place Coffee 12oz</option>
+                        <option value="n2">Nature's Basket Organic Spinach 10oz</option>
+                        <option value="n3">Market District Artisan Bagels 4ct</option>
+                    </select>
+
+                    <div class="category-header"><label>ONES</label><button class="btn-sm" onclick="printFromDropdown('select-ones')">Print Picklist</button></div>
+                    <select id="select-ones" onchange="clearOthers('select-ones')">
+                        <option value="">--- Select Exception ---</option>
+                        <option value="ALL">Select All Items in Category</option>
+                        <option value="o1">Market District Thick Cut Bacon 16oz</option>
+                        <option value="o2">Market District Extra Virgin Olive Oil</option>
+                        <option value="o3">Giant Eagle 2% Milk 1 Gallon</option>
+                    </select>
+
+                    <div class="category-header"><label>TONS</label><button class="btn-sm" onclick="printFromDropdown('select-tons')">Print Picklist</button></div>
+                    <select id="select-tons" onchange="clearOthers('select-tons')">
+                        <option value="">--- Select Exception ---</option>
+                        <option value="ALL">Select All Items in Category</option>
+                        <option value="t1">Giant Eagle Purified Water 24-Pack</option>
+                        <option value="t2">Tide Pods Laundry Detergent 42ct</option>
+                        <option value="t3">Giant Eagle Paper Towels 6-Roll</option>
+                    </select>
+
+                    <button class="btn btn-red" onclick="runDemo()" style="margin-top: 20px;">Run Execution Demo</button>
+                </div>
+            </div>
+
+            <!-- SCREEN 2: DASHBOARD -->
+            <div id="screen-dashboard" class="screen">
+                <h2>Morning Priority Picklist</h2>
+                <p style="color: #6B7280; font-size: 12px; margin-top: -15px; margin-bottom: 20px;">Generated just now. 1 Exception Found.</p>
+                <div class="alert-box" id="dash-alert-box">
+                    <div class="alert-title" id="dash-alert-type">CRITICAL NONE (Ghost Inventory)</div>
+                    <div id="dash-product-name" style="font-weight: 600; margin-bottom: 12px; color: var(--primary-dark);">Product Name</div>
+                    <div class="data-row"><span>Shelf Capacity:</span> <strong id="dash-capacity">0</strong></div>
+                    <div class="data-row"><span>Floor BOH:</span> <strong id="dash-floor" style="color: var(--accent-red);">0</strong></div>
+                    <div class="data-row"><span>Backroom BOH:</span> <strong id="dash-backroom">0</strong></div>
+                    <div class="directive" id="dash-directive">> PULL CASES TO FLOOR</div>
+                </div>
+                <div class="velocity-section">
+                    <div class="vel-title">Sales Velocity Insights (Units Sold)</div>
+                    <div style="font-size: 11px; color: #6B7280; margin-bottom: 4px;">Past 7 Days (D1 = Yesterday)</div>
+                    <div class="vel-grid" id="grid-days"></div>
+                    <div style="font-size: 11px; color: #6B7280; margin-bottom: 4px; margin-top: 10px;">Past 7 Weeks (W1 = Last Week)</div>
+                    <div class="vel-grid" id="grid-weeks"></div>
+                </div>
+                <button class="btn" id="btn-send-handheld" onclick="sendToHandheld()">Send Route to Handheld</button>
+                <button class="btn btn-outline" onclick="resetApp()">Back to Control Panel</button>
+            </div>
+
+            <!-- SCREEN 3: PRINT -->
+            <div id="screen-print" class="screen">
+                <h2 id="print-header">System Picklist</h2>
+                <p style="font-size: 12px; color: #6B7280; margin-top: -15px;">AEMS Generated Report</p>
+                <div id="print-content" style="background: white; padding: 0; font-size: 14px;"></div>
+                <button class="btn btn-red" onclick="window.print()" style="margin-top: 24px;">Print Document</button>
+                <button class="btn btn-outline" onclick="resetApp()">Back to Control Panel</button>
+            </div>
+
+            <!-- SCREEN 4: SCAN -->
+            <div id="screen-scan" class="screen">
+                <h2>Step 1: Scan Item</h2>
+                <p style="font-size: 14px; color: #4B5563; margin-bottom: 24px;">Scan the physical barcode in the backroom to verify item selection.</p>
+                <div class="barcode-area">|| ||| | || |</div>
+                <h3 id="scan-product-name" style="text-align: center; color: var(--primary-dark); font-weight: 600; margin-bottom: 30px;">Product</h3>
+                <button class="btn btn-red" onclick="showScreen('screen-input')">Simulate Barcode Scan</button>
+            </div>
+
+            <!-- SCREEN 5: INPUT -->
+            <div id="screen-input" class="screen">
+                <h2>Step 2: Enter Quantity & Location</h2>
+                <div class="card" style="text-align: center; border: none; padding: 0;">
+                    <h3 id="input-product-name" style="margin-bottom: 8px; color: var(--primary-dark);">Product</h3>
+                    <p style="color: #6B7280; margin-top: 0; font-size: 14px;">Backroom Available: <strong id="input-backroom-avail" style="color: var(--primary-dark);">0</strong></p>
+                    <p style="color: #6B7280; margin-top: -10px; font-size: 13px;">Floor Space Available: <strong id="input-floor-avail" style="color: var(--primary-dark);">0</strong></p>
+                    
+                    <label style="display: block; text-align: left; margin-bottom: 8px; margin-top: 24px;">Units pulled from backroom:</label>
+                    <input type="number" id="stockedQty" placeholder="Enter number..." min="1">
+                    
+                    <!-- NEW: BUBBLE SELECTOR FOR LOCATION -->
+                    <label style="display: block; text-align: left; margin-bottom: 8px; margin-top: 15px;">Target Destination:</label>
+                    <div class="location-toggle">
+                        <div class="toggle-btn selected" id="loc-shelf" onclick="selectLocation('Main Shelf')">Main Shelf</div>
+                        <div class="toggle-btn" id="loc-endcap" onclick="selectLocation('Display / Endcap')">Display / Endcap</div>
+                    </div>
+
+                    <div id="error-msg"></div>
+                </div>
+                <button class="btn" onclick="verifyInput()" style="margin-top: 5px;">Next</button>
+                <button class="btn btn-outline" onclick="showScreen('screen-scan')" style="margin-bottom: 20px;">Cancel</button>
+                <!-- ZERO PICK SAFEGUARD -->
+                <button class="btn btn-outline-red" onclick="zeroPick()">Zero Pick (Item Not in Backroom)</button>
+            </div>
+
+            <!-- SCREEN 6: VERIFY -->
+            <div id="screen-verify" class="screen">
+                <div style="text-align: center; margin-top: 20px;">
+                    <h1 style="color: var(--accent-red); font-size: 36px; margin: 0; font-weight: 800;">WAIT!</h1>
+                    <h2 style="font-size: 20px; margin-top: 5px;">Are you sure?</h2>
+                    <div class="warning-box" id="verify-warning">
+                        <strong>Capacity Warning:</strong><br>
+                        <span id="verify-warning-text">Text goes here.</span>
+                    </div>
+                    <div class="card" style="background-color: #F9FAFB; margin-top: 24px; margin-bottom: 30px;">
+                        <p style="color: #4B5563; margin-bottom: 0;">You are about to transfer:</p>
+                        <h1 id="verify-qty" style="font-size: 56px; margin: 10px 0; color: var(--primary-dark); font-weight: 700;">0</h1>
+                        <p style="color: #4B5563; margin-top: 0;">units to the <strong id="verify-location" style="color: var(--primary-dark);">Main Shelf</strong> for <br><strong id="verify-product-name" style="color: var(--primary-dark);">Product</strong>.</p>
+                    </div>
+                    <button class="btn btn-red" onclick="confirmTransfer()">YES, CONFIRM STOCK</button>
+                    <button class="btn btn-outline" onclick="showScreen('screen-input')">NO, GO BACK</button>
+                </div>
+            </div>
+
+            <!-- SCREEN 7: SUCCESS -->
+            <div id="screen-success" class="screen">
+                <div class="success-box" id="success-box-ui">
+                    <h1 id="success-header-text">Success!</h1>
+                    <p id="success-sub-text" style="color: #166534; font-size: 14px; margin-bottom: 0;">Inventory counts successfully separated and updated in the AR System.</p>
+                </div>
+                <div class="card" style="margin-top: 24px; border: none; padding: 0;">
+                    <h3 id="success-product-name" style="margin-bottom: 16px; color: var(--primary-dark);">Product</h3>
+                    <div class="data-row"><span>Stocked To:</span> <strong id="success-location" style="color: var(--primary-dark);">Main Shelf</strong></div>
+                    <div class="data-row"><span>New Floor BOH:</span> <strong id="success-floor" style="color: var(--success);">0</strong></div>
+                    <div class="data-row"><span>New Backroom BOH:</span> <strong id="success-backroom" style="color: var(--primary-dark);">0</strong></div>
+                </div>
+                <button class="btn" onclick="resetApp()" style="margin-top: 30px;">Complete Walk & Return</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        function launchPrototype() { document.getElementById('landing-view').style.display = 'none'; document.getElementById('app-view').style.display = 'flex'; window.scrollTo(0, 0); }
+        function exitPrototype() { document.getElementById('app-view').style.display = 'none'; document.getElementById('landing-view').style.display = 'block'; resetApp(); window.scrollTo(0, 0); }
+
+        const database = {
+            "n1": { name: "MD Pike Place Coffee 12oz", cap: 12, flr: 2, bck: 24, type: "CRITICAL NONE (Ghost Inventory)", c: "#C8102E", d: [0,0,0,5,6,4,5], w: [35,32,38,30,34,33,35] },
+            "n2": { name: "Nature's Basket Spinach 10oz", cap: 15, flr: 4, bck: 12, type: "CRITICAL NONE (Ghost Inventory)", c: "#C8102E", d: [0,0,0,0,12,15,14], w: [90,95,88,92,94,90,91] },
+            "n3": { name: "MD Artisan Bagels 4ct", cap: 10, flr: 0, bck: 30, type: "CRITICAL NONE (Empty Shelf)", c: "#C8102E", d: [0,0,10,12,11,9,14], w: [70,75,72,68,74,70,71] },
+            "o1": { name: "MD Thick Cut Bacon 16oz", cap: 15, flr: 2, bck: 30, type: "LOW INVENTORY (Understock)", c: "#e5a910", d: [14,15,13,16,15,14,12], w: [95,98,92,96,94,95,93] },
+            "o2": { name: "MD Extra Virgin Olive Oil", cap: 8, flr: 1, bck: 16, type: "LOW INVENTORY (Understock)", c: "#e5a910", d: [6,5,7,6,5,6,4], w: [40,38,42,39,41,40,39] },
+            "o3": { name: "Giant Eagle 2% Milk 1 Gal", cap: 40, flr: 4, bck: 120, type: "LOW INVENTORY (High Velocity)", c: "#e5a910", d: [38,42,39,45,40,41,37], w: [280,285,278,282,284,280,281] },
+            "t1": { name: "GE Purified Water 24-Pack", cap: 20, flr: 20, bck: 120, type: "CAPACITY TON (Overstock)", c: "#2B343B", d: [2,1,3,2,1,2,0], w: [12,15,10,14,11,12,13] },
+            "t2": { name: "Tide Pods 42ct", cap: 12, flr: 12, bck: 60, type: "CAPACITY TON (Overstock)", c: "#2B343B", d: [1,0,1,0,0,1,0], w: [5,8,4,7,6,5,5] },
+            "t3": { name: "GE Paper Towels 6-Roll", cap: 15, flr: 15, bck: 90, type: "CAPACITY TON (Overstock)", c: "#2B343B", d: [2,2,1,3,2,1,1], w: [14,16,12,15,13,14,13] }
+        };
+
+        let currentProduct = null;
+        let selectedLocation = 'Main Shelf'; // Default location
+
+        function clearOthers(activeId) { ['select-nones', 'select-ones', 'select-tons'].forEach(id => { if(id !== activeId) document.getElementById(id).value = ""; }); }
+        
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active-screen'));
+            document.getElementById(screenId).classList.add('active-screen');
+            document.getElementById('error-msg').style.display = 'none';
+        }
+        function buildVelocityGrid(arr, prefix) { return arr.map((val, idx) => `<div class="vel-box"><small>${prefix}${idx+1}</small><span>${val}</span></div>`).join(''); }
+
+        // BUBBLE SELECTOR LOGIC
+        function selectLocation(loc) {
+            selectedLocation = loc;
+            document.getElementById('loc-shelf').classList.remove('selected');
+            document.getElementById('loc-endcap').classList.remove('selected');
+            if(loc === 'Main Shelf') document.getElementById('loc-shelf').classList.add('selected');
+            if(loc === 'Display / Endcap') document.getElementById('loc-endcap').classList.add('selected');
+        }
+
+        function printFromDropdown(dropdownId) {
+            const val = document.getElementById(dropdownId).value;
+            let keys = [];
+            const prefix = dropdownId === 'select-nones' ? 'n' : (dropdownId === 'select-ones' ? 'o' : 't');
+            if (!val || val === 'ALL') { keys = Object.keys(database).filter(k => k.startsWith(prefix)); } else { keys = [val]; }
+            let html = '';
+            keys.forEach(k => {
+                const item = database[k];
+                const needed = item.cap - (item.flr < 0 ? 0 : item.flr);
+                const toPull = Math.min(needed, item.bck);
+                html += `<div class="print-item"><strong>${item.name}</strong><div class="meta">Status: ${item.type} | Floor: ${item.flr} | Backroom: ${item.bck}</div><div style="margin-top: 8px; font-weight: 700; color: var(--primary-dark);">Action: > ${toPull > 0 ? 'PULL ' + toPull + ' UNITS TO FLOOR' : 'DO NOT PICK. CAPACITY MET.'}</div></div>`;
+            });
+            document.getElementById('print-content').innerHTML = html;
+            showScreen('screen-print');
+        }
+
+        function runDemo() {
+            const activeId = ['select-nones', 'select-ones', 'select-tons'].find(id => document.getElementById(id).value !== "");
+            if(!activeId || document.getElementById(activeId).value === "ALL") { alert("Select a specific exception."); return; }
+            currentProduct = JSON.parse(JSON.stringify(database[document.getElementById(activeId).value])); 
+            
+            const alertBox = document.getElementById('dash-alert-box');
+            alertBox.style.borderLeftColor = currentProduct.c;
+            document.getElementById('dash-alert-type').style.color = currentProduct.c;
+            alertBox.style.backgroundColor = currentProduct.c === "#e5a910" ? "#FEFCE8" : (currentProduct.c === "#2B343B" ? "#F3F4F6" : "#FEF2F2");
+
+            document.getElementById('dash-alert-type').innerText = currentProduct.type;
+            document.getElementById('dash-product-name').innerText = currentProduct.name;
+            document.getElementById('dash-capacity').innerText = currentProduct.cap;
+            document.getElementById('dash-floor').innerText = currentProduct.flr;
+            document.getElementById('dash-backroom').innerText = currentProduct.bck;
+            document.getElementById('grid-days').innerHTML = buildVelocityGrid(currentProduct.d, 'D');
+            document.getElementById('grid-weeks').innerHTML = buildVelocityGrid(currentProduct.w, 'W');
+
+            const unitsToPull = Math.min(currentProduct.cap - (currentProduct.flr < 0 ? 0 : currentProduct.flr), currentProduct.bck);
+            document.getElementById('dash-directive').innerText = unitsToPull <= 0 ? `> DO NOT PICK. CAPACITY MET.` : `> PULL ${unitsToPull} UNITS TO FLOOR`;
+            document.getElementById('btn-send-handheld').style.display = unitsToPull <= 0 ? "none" : "block";
+            showScreen('screen-dashboard');
+        }
+
+        function sendToHandheld() { document.getElementById('scan-product-name').innerText = currentProduct.name; showScreen('screen-scan'); }
+        
+        document.getElementById('screen-scan').addEventListener('click', () => { 
+            document.getElementById('input-product-name').innerText = currentProduct.name; 
+            document.getElementById('input-backroom-avail').innerText = currentProduct.bck; 
+            const effectiveFloor = currentProduct.flr < 0 ? 0 : currentProduct.flr;
+            document.getElementById('input-floor-avail').innerText = currentProduct.cap - effectiveFloor; 
+        });
+
+        function verifyInput() {
+            const qty = parseInt(document.getElementById('stockedQty').value);
+            const errorBox = document.getElementById('error-msg');
+            const effectiveFloor = currentProduct.flr < 0 ? 0 : currentProduct.flr;
+            const spaceAvailable = currentProduct.cap - effectiveFloor;
+            
+            if (!qty || qty <= 0) { errorBox.innerHTML = "Please enter a valid quantity."; errorBox.style.display = "block"; return; }
+            if (qty > currentProduct.bck) { errorBox.innerHTML = `Error: You cannot stock ${qty}. Only ${currentProduct.bck} in backroom.`; errorBox.style.display = "block"; return; }
+            
+            // Allow bypassing capacity hard-stop IF they are building an endcap/display
+            if (qty > spaceAvailable && selectedLocation === 'Main Shelf') { 
+                errorBox.innerHTML = `Error: Hard-Stop. You can only fit ${spaceAvailable} more on the shelf.<br><br><a href="#" onclick="alert('Capacity Update Request Sent to Management.');" style="font-size:12px; color:#4B5563; text-decoration:underline;">Shelf is larger? Flag for Planogram Update</a>`; 
+                errorBox.style.display = "block"; return; 
+            }
+            
+            errorBox.style.display = "none";
+            const warningBox = document.getElementById('verify-warning');
+            
+            // Only warn about understocking if going to the main shelf
+            if (qty < Math.min(spaceAvailable, currentProduct.bck) && selectedLocation === 'Main Shelf') {
+                warningBox.style.display = "block"; document.getElementById('verify-warning-text').innerText = `You are only stocking ${qty} units, but there is space for ${spaceAvailable}. Are you sure?`;
+            } else { 
+                warningBox.style.display = "none"; 
+            }
+
+            document.getElementById('verify-qty').innerText = qty; 
+            document.getElementById('verify-product-name').innerText = currentProduct.name; 
+            document.getElementById('verify-location').innerText = selectedLocation; // UPDATE TEXT ON VERIFY SCREEN
+            showScreen('screen-verify');
+        }
+
+        function zeroPick() {
+            document.getElementById('success-box-ui').style.borderLeftColor = "var(--warning)";
+            document.getElementById('success-box-ui').style.backgroundColor = "#FEFCE8";
+            document.getElementById('success-header-text').innerText = "Flagged for Verification";
+            document.getElementById('success-header-text').style.color = "#854D0E";
+            document.getElementById('success-sub-text').innerText = "Exception pushed to Team Lead handheld for secondary visual verification. AR ordering is paused until confirmed.";
+            document.getElementById('success-sub-text').style.color = "#854D0E";
+            
+            document.getElementById('success-product-name').innerText = currentProduct.name;
+            document.getElementById('success-location').innerText = "N/A (Item Missing)";
+            document.getElementById('success-floor').innerText = currentProduct.flr + " (Pending)";
+            document.getElementById('success-backroom').innerText = currentProduct.bck + " (Pending Review)";
+            document.getElementById('success-floor').style.color = "var(--warning)";
+            document.getElementById('success-backroom').style.color = "var(--warning)";
+            
+            showScreen('screen-success');
+        }
+
+        function confirmTransfer() {
+            const qty = parseInt(document.getElementById('stockedQty').value);
+            currentProduct.flr += qty; currentProduct.bck -= qty;
+            
+            document.getElementById('success-box-ui').style.borderLeftColor = "var(--success)";
+            document.getElementById('success-box-ui').style.backgroundColor = "#F0FDF4";
+            document.getElementById('success-header-text').innerText = "Success!";
+            document.getElementById('success-header-text').style.color = "var(--success)";
+            document.getElementById('success-sub-text').innerText = "Inventory counts successfully separated and updated in the AR System.";
+            document.getElementById('success-sub-text').style.color = "#166534";
+            
+            document.getElementById('success-product-name').innerText = currentProduct.name;
+            document.getElementById('success-location').innerText = selectedLocation; // SHOW LOCATION ON SUCCESS
+            document.getElementById('success-floor').innerText = currentProduct.flr;
+            document.getElementById('success-backroom').innerText = currentProduct.bck;
+            document.getElementById('success-floor').style.color = "var(--success)";
+            document.getElementById('success-backroom').style.color = "var(--primary-dark)";
+            showScreen('screen-success');
+        }
+
+        function resetApp() { 
+            document.getElementById('stockedQty').value = ""; 
+            document.getElementById('error-msg').style.display = 'none'; 
+            selectLocation('Main Shelf'); // Reset Bubble selector
+            showScreen('screen-setup'); 
+        }
+    </script>
+</body>
+</html>
